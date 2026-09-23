@@ -11,7 +11,7 @@ YouTube Data API v3 を呼ぶ小さなクライアントです。Node 20 以上�
 npm には公開していません。git タグで参照します。
 
 ```bash
-npm install github:pyonta0215/youtube-kit#v0.1.0
+npm install github:pyonta0215/youtube-kit#v0.1.1
 ```
 
 ## 使い方
@@ -72,6 +72,19 @@ API キーはクエリ文字列に載るため、メッセージに URL・本文
 | `/user/name` | `{ kind: 'username' }` |
 | `/c/name` | `{ kind: 'handle', value: '@name' }`（ハンドルと同じことが多いので試す） |
 | 動画 URL（`watch?v=` / `youtu.be` / `shorts` / `live` / `embed`） | `{ kind: 'video' }`（`channelByRef` は videos.list も使う） |
+
+## 形式（Shorts / 通常 / ライブ）の推定
+
+API に Shorts かどうかのフラグは無いので、尺（`durationSeconds`）で推定します。
+
+| 尺 | `videoFormatByDuration` | 備考 |
+|---|---|---|
+| 0 秒 | `'live'` | 配信中・配信予定のライブや24時間配信は `P0D` で返る。`isLiveByDuration` も true |
+| 1〜180 秒 | `'short'` | `isShortByDuration` が true（`SHORT_MAX_SECONDS = 180`） |
+| 181 秒以上 | `'long'` | |
+| 読めない（`null`） | `'unknown'` | |
+
+v0.1.0 の `isShortByDuration` は 0 秒も Shorts と判定していました。v0.1.1 から 0 秒は Shorts に含めません。Shorts と通常動画で中央値を分けるときは、`live` と `unknown` をどちらにも混ぜないでください。
 
 ## ここに入れないもの
 

@@ -93,7 +93,16 @@ export declare function parseVideoRef(raw: unknown, options?: {
 export declare function parseIsoDuration(iso: unknown): number | null;
 /** Shorts の尺の上限（秒）。API に Shorts かどうかのフラグは無いので、尺で推定する */
 export declare const SHORT_MAX_SECONDS = 180;
+/**
+ * 尺が 0 秒の動画。配信中・配信予定のライブや 24 時間配信は contentDetails.duration が P0D で返る。
+ * 尺が短いわけではないので、Shorts とも通常動画とも別に扱う
+ */
+export declare function isLiveByDuration(seconds: number | null): boolean;
+/** 0 秒（ライブ）は Shorts に含めない。尺が読めないときも false */
 export declare function isShortByDuration(seconds: number | null): boolean;
+export type VideoFormat = 'short' | 'long' | 'live' | 'unknown';
+/** 尺から形式を推定する。中央値を形式ごとに分けて取るとき、live と unknown をどちらにも混ぜないために使う */
+export declare function videoFormatByDuration(seconds: number | null): VideoFormat;
 export declare function chunk<T>(items: readonly T[], size?: number): T[][];
 export interface Channel {
     channelId: string;

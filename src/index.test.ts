@@ -3,10 +3,12 @@ import {
   chunk,
   createQuotaMeter,
   createYouTubeClient,
+  isLiveByDuration,
   isShortByDuration,
   parseChannelRef,
   parseIsoDuration,
   parseVideoRef,
+  videoFormatByDuration,
   YouTubeApiError,
 } from './index.js';
 
@@ -71,6 +73,23 @@ describe('parseVideoRef / parseIsoDuration / chunk', () => {
     expect(isShortByDuration(180)).toBe(true);
     expect(isShortByDuration(181)).toBe(false);
     expect(isShortByDuration(null)).toBe(false);
+  });
+
+  it('0 秒（ライブ・24時間配信の P0D）は Shorts にしない', () => {
+    const live = parseIsoDuration('P0D');
+    expect(isShortByDuration(live)).toBe(false);
+    expect(isLiveByDuration(live)).toBe(true);
+    expect(isLiveByDuration(1)).toBe(false);
+    expect(isLiveByDuration(null)).toBe(false);
+    expect(isShortByDuration(1)).toBe(true);
+  });
+
+  it('尺から形式を推定する', () => {
+    expect(videoFormatByDuration(0)).toBe('live');
+    expect(videoFormatByDuration(59)).toBe('short');
+    expect(videoFormatByDuration(180)).toBe('short');
+    expect(videoFormatByDuration(181)).toBe('long');
+    expect(videoFormatByDuration(null)).toBe('unknown');
   });
 
   it('50件ずつに分ける', () => {

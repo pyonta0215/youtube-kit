@@ -197,8 +197,26 @@ export function parseIsoDuration(iso: unknown): number | null {
 /** Shorts の尺の上限（秒）。API に Shorts かどうかのフラグは無いので、尺で推定する */
 export const SHORT_MAX_SECONDS = 180;
 
+/**
+ * 尺が 0 秒の動画。配信中・配信予定のライブや 24 時間配信は contentDetails.duration が P0D で返る。
+ * 尺が短いわけではないので、Shorts とも通常動画とも別に扱う
+ */
+export function isLiveByDuration(seconds: number | null): boolean {
+  return seconds === 0;
+}
+
+/** 0 秒（ライブ）は Shorts に含めない。尺が読めないときも false */
 export function isShortByDuration(seconds: number | null): boolean {
-  return seconds !== null && seconds <= SHORT_MAX_SECONDS;
+  return seconds !== null && seconds > 0 && seconds <= SHORT_MAX_SECONDS;
+}
+
+export type VideoFormat = 'short' | 'long' | 'live' | 'unknown';
+
+/** 尺から形式を推定する。中央値を形式ごとに分けて取るとき、live と unknown をどちらにも混ぜないために使う */
+export function videoFormatByDuration(seconds: number | null): VideoFormat {
+  if (seconds === null) return 'unknown';
+  if (isLiveByDuration(seconds)) return 'live';
+  return isShortByDuration(seconds) ? 'short' : 'long';
 }
 
 export function chunk<T>(items: readonly T[], size = MAX_IDS_PER_REQUEST): T[][] {
