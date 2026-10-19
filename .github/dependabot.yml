@@ -1,0 +1,18 @@
+# 外部アクションは四半期に1回、1本の PR にまとめて更新する（コミット SHA で固定している分）。
+# 公開から7日たっていない版は待ち、メジャー更新は自動では出さない。
+# npm の定期更新はしない。脆弱性のある依存は、リポジトリ設定のセキュリティ更新が別に PR を作る。
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: quarterly
+    cooldown:
+      default-days: 7
+    groups:
+      actions:
+        patterns: ["*"]
+    ignore:
+      # メジャー更新は壊れうるので自動では出さない。必要になったら個別に上げる
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
